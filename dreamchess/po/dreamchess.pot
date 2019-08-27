@@ -1,0 +1,58 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR DreamChess authors
+# This file is distributed under the same license as the DreamChess package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DreamChess \n"
+"Report-Msgid-Bugs-To: feedback@dreamchess.org\n"
+"POT-Creation-Date: 2019-08-27 17:26+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: gui/title_dialog.c:135
+msgid "Players:"
+msgstr ""
+
+#: gui/title_dialog.c:139
+msgid "Difficulty:"
+msgstr ""
+
+#: gui/title_dialog.c:142
+msgid "Level:"
+msgstr ""
+
+#: gui/title_dialog.c:171
+msgid "Time options.."
+msgstr ""
+
+#: gui/title_dialog.c:176
+msgid "Start Game"
+msgstr ""
+
+#: gui/title_dialog.c:180
+msgid "Cancel"
+msgstr ""
+
+#: gui/title_dialog.c:198
+msgid "New Game.."
+msgstr ""
+
+#: gui/title_dialog.c:202
+msgid "Load Game.."
+msgstr ""
+
+#: gui/title_dialog.c:206
+msgid "Configuration.."
+msgstr ""
+
+#: gui/title_dialog.c:210
+msgid "Quit"
+msgstr ""
