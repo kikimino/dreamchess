@@ -206,6 +206,7 @@ target_include_directories(dreamchess
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIR}
+    ${Intl_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}
@@ -219,6 +220,7 @@ target_link_libraries(dreamchess
     ${SDL2_LIBRARY}
     ${OPENGL_LIBRARY}
     ${EXPAT_LIBRARY}
+    ${Intl_LIBRARIES}
 )
 
 if(VCPKG_TOOLCHAIN)
