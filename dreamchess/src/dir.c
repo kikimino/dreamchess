@@ -133,6 +133,7 @@ void init_i18n(void) {
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <locale.h>
 
 int ch_datadir(void) {
 	return chdir(DATADIR);
