@@ -462,6 +462,7 @@ int main(int argc, char **argv) {
 	cl_options_t cl_options = {0};
 
 	dbg_init();
+	init_i18n();
 	DBG_LOG("Version %s", g_version);
 
 	ui = &ui_sdlgl;

@@ -19,6 +19,8 @@
 */
 
 #include "dir.h"
+#include "i18n.h"
+#include "debug.h"
 
 #ifdef _WIN32
 
@@ -28,19 +30,23 @@
 #include "shlwapi.h"
 #include <io.h>
 #include <windows.h>
+#include <strsafe.h>
+
+static void get_module_dir(LPSTR buf, size_t size) {
+	GetModuleFileName(NULL, buf, size);
+	buf[MAX_PATH - 1] = '\0';
+	PathRemoveFileSpec(buf);
+}
 
 int ch_datadir(void) {
-	char filename[MAX_PATH + 6];
-
-	GetModuleFileName(NULL, filename, MAX_PATH);
-	filename[MAX_PATH] = '\0';
-	PathRemoveFileSpec(filename);
-	strcat(filename, "/data");
-	return chdir(filename);
+	TCHAR datadir[MAX_PATH];
+	get_module_dir(datadir, MAX_PATH);
+	StringCbCatA(datadir, MAX_PATH, "\\data");
+	return chdir(datadir);
 }
 
 int ch_userdir(void) {
-	char appdir[MAX_PATH];
+	TCHAR appdir[MAX_PATH];
 
 	if (SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, appdir))
 		return -1;
@@ -56,6 +62,16 @@ int ch_userdir(void) {
 	}
 
 	return 0;
+}
+
+void init_i18n(void) {
+#ifdef HAVE_LIBINTL_H
+	TCHAR localedir[MAX_PATH];
+	get_module_dir(localedir, MAX_PATH);
+	StringCbCatA(localedir, MAX_PATH, "\\locale");
+	DBG_LOG("dir: %s", bindtextdomain("dreamchess", localedir));
+	textdomain("dreamchess");
+#endif
 }
 
 #elif defined __APPLE__
@@ -105,6 +121,10 @@ int ch_userdir(void) {
 	return 0;
 }
 
+void init_i18n(void) {
+	// TODO
+}
+
 #else /* !_WIN32 */
 
 #define USERDIR ".dreamchess"
@@ -135,6 +155,14 @@ int ch_userdir(void) {
 	}
 
 	return 0;
+}
+
+void init_i18n(void) {
+#ifdef HAVE_LIBINTL_H
+	setlocale(LC_ALL, "");
+	bindtextdomain("dreamchess", LOCALEDIR);
+	textdomain("dreamchess");
+#endif
 }
 
 #endif

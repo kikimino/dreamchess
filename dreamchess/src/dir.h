@@ -23,5 +23,6 @@
 
 int ch_datadir(void);
 int ch_userdir(void);
+void init_i18n(void);
 
 #endif

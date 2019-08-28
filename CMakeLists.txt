@@ -42,6 +42,7 @@ try_compile(HAVE_GNUC_VARARGS_MACROS ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
+set(GettextTranslate_GMO_BINARY ON)
 include(GettextTranslate)
 
 add_subdirectory(common/src)

@@ -54,6 +54,8 @@ add_executable(dreamchess MACOSX_BUNDLE
     include/theme.h
 )
 
+add_dependencies(dreamchess update-gmo)
+
 set(COPYRIGHT_STRING "Copyright © 2003-${COPYRIGHT_YEAR} DreamChess developers")
 
 set_target_properties(dreamchess PROPERTIES
@@ -195,7 +197,7 @@ source_group("Source Files\\gui" REGULAR_EXPRESSION /gui/.*.c$)
 source_group("Header Files\\gui" REGULAR_EXPRESSION /gui/.*.h$)
 
 if(UNIX)
-    target_compile_definitions(dreamchess PRIVATE -DDATADIR="${CMAKE_INSTALL_FULL_DATADIR}/dreamchess")
+    target_compile_definitions(dreamchess PRIVATE -DDATADIR="${CMAKE_INSTALL_FULL_DATADIR}/dreamchess" -DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
 endif()
 
 target_include_directories(dreamchess

@@ -30,4 +30,6 @@
 	#define _(STRING) STRING
 #endif
 
+#define _N(STRING) STRING
+
 #endif
