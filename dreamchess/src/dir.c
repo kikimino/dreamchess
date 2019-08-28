@@ -68,6 +68,7 @@ void init_i18n(void) {
 	TCHAR localedir[MAX_PATH];
 	get_module_dir(localedir, MAX_PATH);
 	StringCbCatA(localedir, MAX_PATH, "\\locale");
+	bindtextdomain("dreamchess", localedir);
 	textdomain("dreamchess");
 }
 
