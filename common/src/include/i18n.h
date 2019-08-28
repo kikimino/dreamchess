@@ -18,18 +18,12 @@
 **  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <libintl.h>
+
 #ifndef COMMON_I18N_H
 #define COMMON_I18N_H
 
-#include "config.h"
-
-#ifdef HAVE_LIBINTL_H
-	#include <libintl.h>
-	#define _(STRING) gettext(STRING)
-#else
-	#define _(STRING) STRING
-#endif
-
+#define _(STRING) gettext(STRING)
 #define _N(STRING) STRING
 
 #endif

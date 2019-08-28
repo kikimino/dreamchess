@@ -9,9 +9,10 @@ option(BUILD_DREAMER "Build Dreamer chess engine" ON)
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
-find_package(Intl)
-if(Intl_FOUND)
-    set(HAVE_LIBINTL_H 1 CACHE INTERNAL "Have include libintl.h")
+if(VCPKG_TOOLCHAIN)
+    find_package(unofficial-gettext CONFIG REQUIRED)
+else()
+    find_package(Intl REQUIRED)
 endif()
 
 if(UNIX AND NOT APPLE)

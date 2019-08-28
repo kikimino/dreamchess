@@ -65,13 +65,10 @@ int ch_userdir(void) {
 }
 
 void init_i18n(void) {
-#ifdef HAVE_LIBINTL_H
 	TCHAR localedir[MAX_PATH];
 	get_module_dir(localedir, MAX_PATH);
 	StringCbCatA(localedir, MAX_PATH, "\\locale");
-	DBG_LOG("dir: %s", bindtextdomain("dreamchess", localedir));
 	textdomain("dreamchess");
-#endif
 }
 
 #elif defined __APPLE__
@@ -159,11 +156,9 @@ int ch_userdir(void) {
 }
 
 void init_i18n(void) {
-#ifdef HAVE_LIBINTL_H
 	setlocale(LC_ALL, "");
 	bindtextdomain("dreamchess", LOCALEDIR);
 	textdomain("dreamchess");
-#endif
 }
 
 #endif
