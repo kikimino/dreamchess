@@ -81,23 +81,20 @@ void init_i18n(void) {
 #define USERDIR "Library/Application Support/DreamChess"
 
 int ch_datadir(void) {
-	char temp1[200];
-	char temp2[200];
-	char temp3[200];
 	CFBundleRef mainBundle = CFBundleGetMainBundle();
+	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
 
-	CFURLRef bundledir = CFBundleCopyResourcesDirectoryURL(mainBundle);
-	CFURLRef resdir = CFBundleCopyBundleURL(mainBundle);
+	if (!resourcesURL)
+		return -1;
 
-	CFStringRef stringref = CFURLCopyFileSystemPath(bundledir, kCFURLPOSIXPathStyle);
-	CFStringGetCString(stringref, temp1, 200, kCFStringEncodingMacRoman);
+	char path[PATH_MAX];
+	if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX)) {
+		CFRelease(resourcesURL);
+		return -1;
+	}
 
-	stringref = CFURLCopyFileSystemPath(resdir, kCFURLPOSIXPathStyle);
-	CFStringGetCString(stringref, temp2, 200, kCFStringEncodingMacRoman);
-
-	snprintf(temp3, sizeof(temp3), "%s/%s", temp2, temp1);
-
-	return chdir(temp3);
+	CFRelease(resourcesURL);
+	return chdir(path);
 }
 
 int ch_userdir(void) {
@@ -120,7 +117,27 @@ int ch_userdir(void) {
 }
 
 void init_i18n(void) {
-	// TODO
+	CFBundleRef mainBundle = CFBundleGetMainBundle();
+	CFURLRef sharedSupportURL = CFBundleCopySharedSupportURL(mainBundle);
+
+	if (!sharedSupportURL)
+		return;
+
+	CFURLRef localeURL = CFURLCreateCopyAppendingPathComponent(NULL, sharedSupportURL, CFSTR("locale"), TRUE);
+
+	CFRelease(sharedSupportURL);
+
+	if (!localeURL)
+		return;
+
+	char path[PATH_MAX];
+	if (CFURLGetFileSystemRepresentation(localeURL, TRUE, (UInt8 *)path, PATH_MAX)) {
+		setlocale(LC_ALL, "");
+		bindtextdomain("dreamchess", path);
+		textdomain("dreamchess");
+	}
+
+	CFRelease(localeURL);
 }
 
 #else /* !_WIN32 */
