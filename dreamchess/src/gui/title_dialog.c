@@ -28,7 +28,7 @@ static void create_option_values(gg_option_t *widget, option_t *option) {
 	option_value_t *value;
 
 	OPTION_VALUE_FOREACH(value, option) {
-		gg_option_append_label(widget, value->name, 0.5f, 0.0f);
+		gg_option_append_label(widget, gettext(value->name), 0.5f, 0.0f);
 	}
 
 	gg_option_set_selected(widget, option->selected->index);
