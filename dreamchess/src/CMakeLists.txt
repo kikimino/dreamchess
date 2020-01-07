@@ -13,6 +13,7 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(Freetype REQUIRED)
 find_package(EXPAT REQUIRED)
 
 BISON_TARGET(PgnParser pgn_parser.y ${CMAKE_CURRENT_BINARY_DIR}/pgn_parser.c)
@@ -191,6 +192,20 @@ target_sources(dreamchess
     gui/victory_dialog.c
     gui/vkeyboard.c
     gui/xmlsavefile.c
+    gui/freetype-gl/distance-field.c
+    gui/freetype-gl/distance-field.h
+    gui/freetype-gl/edtaa3func.c
+    gui/freetype-gl/edtaa3func.h
+    gui/freetype-gl/platform.c
+    gui/freetype-gl/platform.h
+    gui/freetype-gl/texture-atlas.c
+    gui/freetype-gl/texture-atlas.h
+    gui/freetype-gl/texture-font.c
+    gui/freetype-gl/texture-font.h
+    gui/freetype-gl/utf8-utils.c
+    gui/freetype-gl/utf8-utils.h
+    gui/freetype-gl/vector.c
+    gui/freetype-gl/vector.h
 )
 
 source_group("Source Files\\gui" REGULAR_EXPRESSION /gui/.*.c$)
@@ -207,6 +222,7 @@ target_include_directories(dreamchess
     ${SDL2_MIXER_INCLUDE_DIR}
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
+    ${FREETYPE_INCLUDE_DIRS}
     ${EXPAT_INCLUDE_DIR}
     ${Intl_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -217,6 +233,7 @@ target_include_directories(dreamchess
 target_link_libraries(dreamchess
     common
     GLEW::GLEW
+    ${FREETYPE_LIBRARIES}
     ${SDL2_IMAGE_LIBRARY}
     ${SDL2_MIXER_LIBRARY}
     ${SDL2_LIBRARY}
