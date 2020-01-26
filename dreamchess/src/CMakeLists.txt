@@ -189,6 +189,8 @@ target_sources(dreamchess
     gui/ui_sdlgl_3d.h
     gui/ui_sdlgl.c
     gui/ui_sdlgl.h
+    gui/unicode.c
+    gui/unicode.h
     gui/victory_dialog.c
     gui/vkeyboard.c
     gui/xmlsavefile.c

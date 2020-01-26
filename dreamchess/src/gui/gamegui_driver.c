@@ -19,6 +19,7 @@
 */
 
 #include "ui_sdlgl.h"
+#include "unicode.h"
 
 static unsigned int utf8_to_utf32(const char *utf8) {
 	unsigned int char_utf32 = 0;
@@ -166,6 +167,20 @@ static void draw_char(int c, int x, int y, gg_colour_t *colour) {
 	text_draw_char(x, y, 1.0f, c, colour);
 }
 
+static unsigned int get_line_height(void) {
+	return 0;
+}
+
+static unsigned int get_string_width(const char *text) {
+	return 0;
+}
+
+static void draw_string(const char *text, int x, int y, gg_colour_t *colour) {
+	unicode_string_t *string = unicode_string_create(text);
+	unicode_string_render(string, x, y);
+	unicode_string_destroy(string);
+}
+
 static void get_image_size(void *image, int *width, int *height) {
 	texture_t *texture = image;
 
@@ -196,7 +211,8 @@ static float get_gl_screen_width(void) {
 }
 
 gg_driver_t gg_driver_sdlgl = {draw_rect, draw_rect_fill, draw_rect_fill_gradient, draw_image, get_char_image,
-							   draw_char, get_image_size, get_char_size,		   get_ticks,  get_gl_screen_width};
+							   draw_char, get_image_size, get_char_size, get_ticks, get_gl_screen_width,
+							   get_line_height, get_string_width, draw_string};
 
 gg_driver_t *get_gg_driver_sdlgl(void) {
 	return &gg_driver_sdlgl;

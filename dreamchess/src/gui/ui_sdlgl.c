@@ -33,6 +33,7 @@
 #include "system_config.h"
 #include "theme.h"
 #include "i18n.h"
+#include "unicode.h"
 #include <GL/glew.h>
 #include <SDL2/SDL_syswm.h>
 
@@ -322,6 +323,7 @@ static config_t *do_menu(int *pgn) {
 		glDisable(GL_DEPTH_TEST);
 		draw_texture_fullscreen(&menu_title_tex, 1.0f);
 		glEnable(GL_BLEND);
+		unicode_render_atlas();
 		glEnable(GL_DEPTH_TEST);
 		text_draw_string_right(get_gl_width() - 20, 20, g_version, 0.75f, get_col(COL_WHITE));
 
@@ -539,6 +541,7 @@ static int create_window(int width, int height, int fullscreen, int ms) {
 	init_screen_fbo(width, height, ms);
 
 	init_gl();
+	unicode_init();
 	load_menu_tex();
 
 	SDL_ShowCursor(SDL_DISABLE);
@@ -630,6 +633,8 @@ static int sdlgl_exit(void) {
 	gg_system_exit();
 	free_menu_tex();
 	deinit_fbo();
+
+	unicode_exit();
 
 	SDL_Quit();
 	return 0;
