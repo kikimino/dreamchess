@@ -16,6 +16,12 @@ find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(EXPAT REQUIRED)
 
+include(CheckLibraryExists)
+check_library_exists(m cos "" HAVE_LIBM)
+if(HAVE_LIBM)
+    set(MATH_LIBRARY "m")
+endif()
+
 BISON_TARGET(PgnParser pgn_parser.y ${CMAKE_CURRENT_BINARY_DIR}/pgn_parser.c)
 FLEX_TARGET(PgnScanner pgn_scanner.l ${CMAKE_CURRENT_BINARY_DIR}/pgn_scanner.c)
 ADD_FLEX_BISON_DEPENDENCY(PgnScanner PgnParser)
@@ -242,6 +248,7 @@ target_link_libraries(dreamchess
     ${OPENGL_LIBRARY}
     ${EXPAT_LIBRARY}
     ${Intl_LIBRARIES}
+    ${MATH_LIBRARY}
 )
 
 if(VCPKG_TOOLCHAIN)
