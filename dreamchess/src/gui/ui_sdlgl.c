@@ -539,9 +539,13 @@ static int create_window(int width, int height, int fullscreen, int ms) {
 	}
 
 	init_screen_fbo(width, height, ms);
-
 	init_gl();
-	unicode_init();
+
+	if (unicode_init()) {
+		DBG_ERROR("Failed to initialize font system");
+		exit(1);
+	}
+
 	load_menu_tex();
 
 	SDL_ShowCursor(SDL_DISABLE);

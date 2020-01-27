@@ -23,6 +23,7 @@
 
 #include "debug.h"
 #include "unicode.h"
+#include "dir.h"
 
 #include "freetype-gl/texture-font.h"
 #include "freetype-gl/vector.h"
@@ -44,8 +45,16 @@ void check_error() {
 }
 
 int unicode_init(void) {
+	char *font_path = dir_get_real_path("fonts/OpenSans-Regular.ttf");
+
+	if (!font_path) {
+		DBG_ERROR("Failed to get full path to font file");
+		return -1;
+	}
+
 	atlas  = texture_atlas_new(512, 512, 1);
-	font = texture_font_new_from_file(atlas, 50, "fonts/OpenSans-Regular.ttf");
+	font = texture_font_new_from_file(atlas, 50, font_path);
+	free(font_path);
 
 	if (!font) {
 		DBG_ERROR("Failed to load font");
@@ -67,7 +76,6 @@ void unicode_exit(void) {
 	texture_font_delete(font);
 
 	glDeleteTextures(1, &atlas->id);
-	atlas->id = 0;
 	texture_atlas_delete(atlas);
 }
 

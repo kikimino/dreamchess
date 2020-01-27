@@ -24,5 +24,6 @@
 int ch_datadir(void);
 int ch_userdir(void);
 void init_i18n(void);
+char *dir_get_real_path(const char *filename);
 
 #endif
