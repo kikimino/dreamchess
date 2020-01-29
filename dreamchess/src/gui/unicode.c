@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "debug.h"
+#include "ui_sdlgl.h"
 #include "unicode.h"
 #include "dir.h"
 
@@ -44,7 +45,8 @@ void check_error() {
     }
 }
 
-int unicode_init(void) {
+static int load_font(float pt_size) {
+	ch_datadir();
 	char *font_path = dir_get_real_path("fonts/OpenSans-Regular.ttf");
 
 	if (!font_path) {
@@ -52,14 +54,20 @@ int unicode_init(void) {
 		return -1;
 	}
 
-	atlas  = texture_atlas_new(512, 512, 1);
-	font = texture_font_new_from_file(atlas, 50, font_path);
+	font = texture_font_new_from_file(atlas, pt_size, font_path);
+
 	free(font_path);
 
 	if (!font) {
 		DBG_ERROR("Failed to load font");
 		return -1;
 	}
+
+	return 0;
+}
+
+int unicode_init(float pt_size) {
+	atlas  = texture_atlas_new(1024, 1024, 1);
 
 	glGenTextures(1, &atlas->id);
 	glBindTexture(GL_TEXTURE_2D, atlas->id);
@@ -69,7 +77,14 @@ int unicode_init(void) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, atlas->width, atlas->height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, atlas->data);
 
-	return 0;
+	return load_font(pt_size);
+}
+
+int unicode_resize(float pt_size) {
+	texture_atlas_clear(atlas);
+	gpu_atlas_size = 0;
+	texture_font_delete(font);
+	return load_font(pt_size);
 }
 
 void unicode_exit(void) {
@@ -130,6 +145,8 @@ unicode_string_t *unicode_string_create(const char *text) {
 }
 
 void unicode_string_render(unicode_string_t *string, float x, float y) {
+	const float scale = get_gl_height() / get_screen_height();
+
 	glEnable(GL_TEXTURE_2D);
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -137,7 +154,7 @@ void unicode_string_render(unicode_string_t *string, float x, float y) {
 
 	glPushMatrix();
 	glTranslatef(x, y, 0.0f);
-	glScalef(0.3f, 0.3f, 1.0f);
+	glScalef(scale, scale, 1.0f);
 	glBegin(GL_QUADS);
 
 	size_t i;

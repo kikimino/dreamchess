@@ -442,6 +442,8 @@ static int set_fullscreen(int fullscreen) {
 	return 0;
 }
 
+static const float font_size = 16.0f;
+
 static int resize(int width, int height, int fullscreen, int ms) {
 	DBG_LOG("Resizing video mode to %ix%i; fullscreen %s; %ix multisampling", width, height, fullscreen ? "on" : "off",
 			ms);
@@ -472,6 +474,11 @@ static int resize(int width, int height, int fullscreen, int ms) {
 	screen_fs = fullscreen;
 	screen_ms = ms;
 	resize_window(screen_width, screen_height);
+
+	if (unicode_resize(font_size * get_screen_height() / get_gl_height())) {
+		DBG_ERROR("Failed to resize font system");
+		exit(1);
+	}
 
 	return 0;
 }
@@ -540,8 +547,9 @@ static int create_window(int width, int height, int fullscreen, int ms) {
 
 	init_screen_fbo(width, height, ms);
 	init_gl();
+	resize_window(width, height);
 
-	if (unicode_init()) {
+	if (unicode_init(font_size * height / get_gl_height())) {
 		DBG_ERROR("Failed to initialize font system");
 		exit(1);
 	}

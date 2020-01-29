@@ -22,7 +22,8 @@
 #define GUI_UNICODE_H
 
 typedef struct vector_t unicode_string_t;
-int unicode_init(void);
+int unicode_init(float pt_size);
+int unicode_resize(float pt_size);
 void unicode_exit(void);
 unicode_string_t *unicode_string_create(const char *text);
 void unicode_string_destroy(unicode_string_t *string);
