@@ -27,7 +27,6 @@
 #include "dir.h"
 
 #include "freetype-gl/texture-font.h"
-#include "freetype-gl/vector.h"
 
 static texture_atlas_t *atlas;
 static texture_font_t *font;
@@ -37,13 +36,6 @@ typedef struct {
 	float x, y, z;
 	float s, t;
 } vertex_t;
-
-void check_error() {
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-        DBG_LOG("OpenGL error: %s\n", gluErrorString(err));
-    }
-}
 
 static int load_font(float pt_size) {
 	ch_datadir();
@@ -94,40 +86,32 @@ void unicode_exit(void) {
 	texture_atlas_delete(atlas);
 }
 
-unicode_string_t *unicode_string_create(const char *text) {
-	unicode_string_t *string = vector_new(sizeof(vertex_t));
+static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
+	const size_t text_len = strlen(text);
+	*array_size = text_len * 4;
+	vertex_t *vertex_array = malloc(sizeof(vertex_t) * *array_size);
 
-	size_t i;
 	float pen_x = 0.0f;
 	const float pen_y = 0.0f;
-	for(i = 0; i < strlen(text); ++i) {
+	for (size_t i = 0; i < text_len; ++i) {
 		texture_glyph_t *glyph = texture_font_get_glyph(font, text + i);
 
-		if(glyph != NULL) {
+		if (glyph != NULL) {
 			float kerning = 0.0f;
 			if (i > 0)
 				kerning = texture_glyph_get_kerning(glyph, text + i - 1);
 
 			pen_x += kerning;
 
-			int x0  = (int)(pen_x + glyph->offset_x);
-			int y0  = (int)(pen_y + glyph->offset_y);
-			int x1  = (int)(x0 + glyph->width);
-			int y1  = (int)(y0 - glyph->height);
+			const int x0  = (int)(pen_x + glyph->offset_x);
+			const int y0  = (int)(pen_y + glyph->offset_y);
+			const int x1  = (int)(x0 + glyph->width);
+			const int y1  = (int)(y0 - glyph->height);
 
-			float s0 = glyph->s0;
-			float t0 = glyph->t0;
-			float s1 = glyph->s1;
-			float t1 = glyph->t1;
-
-			vertex_t vertices[4] = {{x0, y0, 1.0f, s0, t0},
-								   {x0, y1, 1.0f, s0, t1},
-								   {x1, y1, 1.0f, s1, t1},
-								   {x1, y0, 1.0f, s1, t0}};
-
-			size_t j;
-			for (j = 0; j < 4; ++j)
-				vector_push_back(string, vertices + j);
+			vertex_array[i * 4] = (vertex_t){ x0, y0, 1.0f, glyph->s0, glyph->t0 };
+			vertex_array[i * 4 + 1] = (vertex_t){ x0, y1, 1.0f, glyph->s0, glyph->t1 };
+			vertex_array[i * 4 + 2] = (vertex_t){ x1, y1, 1.0f, glyph->s1, glyph->t1 };
+			vertex_array[i * 4 + 3] = (vertex_t){ x1, y0, 1.0f, glyph->s1, glyph->t0 };
 
 			pen_x += glyph->advance_x;
 		} else {
@@ -141,10 +125,13 @@ unicode_string_t *unicode_string_create(const char *text) {
 		gpu_atlas_size = vector_size(font->glyphs);
 	}
 
-	return string;
+	return vertex_array;
 }
 
-void unicode_string_render(unicode_string_t *string, float x, float y) {
+void unicode_string_render(const char *text, float x, float y) {
+	size_t array_size;
+	vertex_t *vertex_array = create_vertex_array(text, &array_size);
+
 	const float scale = get_gl_height() / get_screen_height();
 
 	glEnable(GL_TEXTURE_2D);
@@ -157,17 +144,16 @@ void unicode_string_render(unicode_string_t *string, float x, float y) {
 	glScalef(scale, scale, 1.0f);
 	glBegin(GL_QUADS);
 
-	size_t i;
-    for (i = 0; i < vector_size(string); ++i) {
-		const vertex_t *vertex = vector_get(string, i);
-
-		glTexCoord2f(vertex->s, vertex->t);
-		glVertex3f(vertex->x, vertex->y, vertex->z);
+	for (size_t i = 0; i < array_size; ++i) {
+		glTexCoord2f(vertex_array[i].s, vertex_array[i].t);
+		glVertex3f(vertex_array[i].x, vertex_array[i].y, vertex_array[i].z);
 	}
 
 	glEnd();
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
+
+	free(vertex_array);
 }
 
 void unicode_render_atlas(void) {
@@ -194,14 +180,4 @@ void unicode_render_atlas(void) {
 	glEnd();
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
-}
-
-void unicode_string_render_text(const char *text, float x, float y) {
-	unicode_string_t *string = unicode_string_create(text);
-	unicode_string_render(string, x, y);
-	unicode_string_destroy(string);
-}
-
-void unicode_string_destroy(unicode_string_t *string) {
-	vector_delete(string);
 }

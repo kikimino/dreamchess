@@ -238,6 +238,8 @@ target_include_directories(dreamchess
     ${CMAKE_BINARY_DIR}
 )
 
+set_property(TARGET dreamchess PROPERTY C_STANDARD 99)
+
 target_link_libraries(dreamchess
     common
     GLEW::GLEW

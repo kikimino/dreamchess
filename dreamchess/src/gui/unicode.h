@@ -21,14 +21,10 @@
 #ifndef GUI_UNICODE_H
 #define GUI_UNICODE_H
 
-typedef struct vector_t unicode_string_t;
 int unicode_init(float pt_size);
 int unicode_resize(float pt_size);
 void unicode_exit(void);
-unicode_string_t *unicode_string_create(const char *text);
-void unicode_string_destroy(unicode_string_t *string);
-void unicode_string_render(unicode_string_t *string, float x, float y);
-void unicode_string_render_text(const char *text, float x, float y);
+void unicode_string_render(const char *text, float x, float y);
 void unicode_render_atlas(void);
 
 #endif
