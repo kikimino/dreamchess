@@ -88,34 +88,38 @@ void unicode_exit(void) {
 
 static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
 	const size_t text_len = strlen(text);
+
+	// Maximum size if every byte yields a glyph
 	*array_size = text_len * 4;
 	vertex_t *vertex_array = malloc(sizeof(vertex_t) * *array_size);
+	size_t vertex_index = 0;
 
 	float pen_x = 0.0f;
 	const float pen_y = 0.0f;
 	for (size_t i = 0; i < text_len; ++i) {
-		texture_glyph_t *glyph = texture_font_get_glyph(font, text + i);
+		// Skip bytes that are continuing a UTF-8 sequence
+		if ((unsigned int)text[i] < 128 || (unsigned int)text[i] >= 192) {
+			texture_glyph_t *glyph = texture_font_get_glyph(font, text + i);
 
-		if (glyph != NULL) {
-			float kerning = 0.0f;
-			if (i > 0)
-				kerning = texture_glyph_get_kerning(glyph, text + i - 1);
+			if (glyph != NULL) {
+				float kerning = 0.0f;
+				if (i > 0)
+					kerning = texture_glyph_get_kerning(glyph, text + i - 1);
 
-			pen_x += kerning;
+				pen_x += kerning;
 
-			const int x0  = (int)(pen_x + glyph->offset_x);
-			const int y0  = (int)(pen_y + glyph->offset_y);
-			const int x1  = (int)(x0 + glyph->width);
-			const int y1  = (int)(y0 - glyph->height);
+				const int x0  = (int)(pen_x + glyph->offset_x);
+				const int y0  = (int)(pen_y + glyph->offset_y);
+				const int x1  = (int)(x0 + glyph->width);
+				const int y1  = (int)(y0 - glyph->height);
 
-			vertex_array[i * 4] = (vertex_t){ x0, y0, 1.0f, glyph->s0, glyph->t0 };
-			vertex_array[i * 4 + 1] = (vertex_t){ x0, y1, 1.0f, glyph->s0, glyph->t1 };
-			vertex_array[i * 4 + 2] = (vertex_t){ x1, y1, 1.0f, glyph->s1, glyph->t1 };
-			vertex_array[i * 4 + 3] = (vertex_t){ x1, y0, 1.0f, glyph->s1, glyph->t0 };
+				vertex_array[vertex_index++] = (vertex_t){ x0, y1, 1.0f, glyph->s0, glyph->t1 };
+				vertex_array[vertex_index++] = (vertex_t){ x0, y0, 1.0f, glyph->s0, glyph->t0 };
+				vertex_array[vertex_index++] = (vertex_t){ x1, y0, 1.0f, glyph->s1, glyph->t0 };
+				vertex_array[vertex_index++] = (vertex_t){ x1, y1, 1.0f, glyph->s1, glyph->t1 };
 
-			pen_x += glyph->advance_x;
-		} else {
-			DBG_LOG("Failed to load glyph for %c", text[i]);
+				pen_x += glyph->advance_x;
+			}
 		}
 	}
 
@@ -125,10 +129,12 @@ static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
 		gpu_atlas_size = vector_size(font->glyphs);
 	}
 
+	// Update to actual size
+	*array_size = vertex_index;
 	return vertex_array;
 }
 
-static void render_vertex_array(const vertex_t *vertex_array, size_t size, float x, float y, float scale, gg_colour_t colour) {
+static void render_vertex_array(const vertex_t *vertex_array, size_t size, float x, float y, float align, float scale, unsigned int flags, gg_colour_t colour) {
 	glEnable(GL_TEXTURE_2D);
 
 	glColor4f(colour.r, colour.g, colour.b, colour.a);
@@ -137,11 +143,30 @@ static void render_vertex_array(const vertex_t *vertex_array, size_t size, float
 	glPushMatrix();
 	glTranslatef(x, y, 0.0f);
 	glScalef(scale, scale, 1.0f);
+
+	glTranslatef(-(align * vertex_array[size - 1].x), 0.0f, 0.0f);
+
 	glBegin(GL_QUADS);
 
+	Uint32 ticks = SDL_GetTicks();
+	float bounce_offset = 0.0f;
+
 	for (size_t i = 0; i < size; ++i) {
+		if (flags & GG_FLAG_BOUNCY && i % 4 == 0) {
+			float phase = ((ticks % (1000 / BOUNCE_SPEED)) / (float)(1000 / BOUNCE_SPEED));
+
+			if (phase < 0.5)
+				bounce_offset = phase * 2 * (BOUNCE_AMP + 1);
+			else
+				bounce_offset = ((1.0 - phase) * 2) * (BOUNCE_AMP + 1);
+
+			bounce_offset /= scale;
+
+			ticks += 1000 / BOUNCE_SPEED / BOUNCE_LEN;
+		}
+
 		glTexCoord2f(vertex_array[i].s, vertex_array[i].t);
-		glVertex3f(vertex_array[i].x, vertex_array[i].y, vertex_array[i].z);
+		glVertex3f(vertex_array[i].x, vertex_array[i].y + bounce_offset, vertex_array[i].z);
 	}
 
 	glEnd();
@@ -150,13 +175,15 @@ static void render_vertex_array(const vertex_t *vertex_array, size_t size, float
 	glDisable(GL_TEXTURE_2D);
 }
 
-void unicode_string_render(const char *text, float x, float y, float scale, unsigned int flags) {
+void unicode_string_render(const char *text, float x, float y, float align, float scale, unsigned int flags, gg_colour_t colour) {
+	const float screen_scale = get_gl_height() / get_screen_height();
 	size_t array_size;
 	vertex_t *vertex_array = create_vertex_array(text, &array_size);
 
-	const float screen_scale = get_gl_height() / get_screen_height();
+	if (!(flags & GG_FLAG_NO_SHADOW))
+		render_vertex_array(vertex_array, array_size, x + 1.0f, y - 1.0f, align, screen_scale * scale, flags, (gg_colour_t){ 0.0f, 0.0f, 0.0f, 1.0f });
 
-	render_vertex_array(vertex_array, array_size, x, y, screen_scale * scale, (gg_colour_t){ 1.0f, 0.0f, 0.0f, 1.0f });
+	render_vertex_array(vertex_array, array_size, x, y, align, screen_scale * scale, flags, colour);
 
 	free(vertex_array);
 }

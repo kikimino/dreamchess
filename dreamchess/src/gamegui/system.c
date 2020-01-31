@@ -213,7 +213,7 @@ void gg_system_get_string_size(char *s, int *width, int *height) {
 }
 
 void gg_system_draw_string(char *s, int x, int y, gg_colour_t *colour, int bounce, float align) {
-	driver->draw_string(s, x, y, colour);
+	driver->draw_string(s, x, y, align, (bounce ? GG_FLAG_BOUNCY : 0) | (colour->a == 2.0f ? GG_FLAG_NO_SHADOW : 0), *colour);
 
 	int i;
 	unsigned int ticks = gg_system_get_ticks();

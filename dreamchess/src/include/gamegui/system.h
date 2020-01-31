@@ -41,6 +41,9 @@
 /** Bouncy text speed in bounces per second. */
 #define GG_BOUNCE_SPEED 3
 
+#define GG_FLAG_BOUNCY    (1 << 0)
+#define GG_FLAG_NO_SHADOW (1 << 1)
+
 /** Unique value used to identify a class. */
 typedef int gg_class_id;
 
@@ -93,7 +96,7 @@ typedef struct gg_driver {
 	/* Unicode string interface */
 	unsigned int (*get_line_height)(void);
 	unsigned int (*get_string_width)(const char *text);
-	void (*draw_string)(const char *text, int x, int y, gg_colour_t *colour);
+	void (*draw_string)(const char *text, int x, int y, float align, unsigned int flags, gg_colour_t colour);
 } gg_driver_t;
 
 /** Value indicating an unregistered class. */
