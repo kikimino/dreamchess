@@ -176,7 +176,7 @@ static unsigned int get_string_width(const char *text) {
 }
 
 static void draw_string(const char *text, int x, int y, gg_colour_t *colour) {
-	unicode_string_render(text, x, y);
+	unicode_string_render(text, x, y, 1.0f, 0);
 }
 
 static void get_image_size(void *image, int *width, int *height) {

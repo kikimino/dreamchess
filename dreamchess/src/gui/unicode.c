@@ -128,15 +128,10 @@ static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
 	return vertex_array;
 }
 
-void unicode_string_render(const char *text, float x, float y) {
-	size_t array_size;
-	vertex_t *vertex_array = create_vertex_array(text, &array_size);
-
-	const float scale = get_gl_height() / get_screen_height();
-
+static void render_vertex_array(const vertex_t *vertex_array, size_t size, float x, float y, float scale, gg_colour_t colour) {
 	glEnable(GL_TEXTURE_2D);
 
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glColor4f(colour.r, colour.g, colour.b, colour.a);
 	glBindTexture(GL_TEXTURE_2D, atlas->id);
 
 	glPushMatrix();
@@ -144,14 +139,24 @@ void unicode_string_render(const char *text, float x, float y) {
 	glScalef(scale, scale, 1.0f);
 	glBegin(GL_QUADS);
 
-	for (size_t i = 0; i < array_size; ++i) {
+	for (size_t i = 0; i < size; ++i) {
 		glTexCoord2f(vertex_array[i].s, vertex_array[i].t);
 		glVertex3f(vertex_array[i].x, vertex_array[i].y, vertex_array[i].z);
 	}
 
 	glEnd();
 	glPopMatrix();
+
 	glDisable(GL_TEXTURE_2D);
+}
+
+void unicode_string_render(const char *text, float x, float y, float scale, unsigned int flags) {
+	size_t array_size;
+	vertex_t *vertex_array = create_vertex_array(text, &array_size);
+
+	const float screen_scale = get_gl_height() / get_screen_height();
+
+	render_vertex_array(vertex_array, array_size, x, y, screen_scale * scale, (gg_colour_t){ 1.0f, 0.0f, 0.0f, 1.0f });
 
 	free(vertex_array);
 }

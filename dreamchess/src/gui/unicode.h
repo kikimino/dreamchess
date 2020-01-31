@@ -21,10 +21,13 @@
 #ifndef GUI_UNICODE_H
 #define GUI_UNICODE_H
 
+#define UNICODE_FLAG_BOUNCY    (1 << 0)
+#define UNICODE_FLAG_NO_SHADOW (1 << 1)
+
 int unicode_init(float pt_size);
 int unicode_resize(float pt_size);
 void unicode_exit(void);
-void unicode_string_render(const char *text, float x, float y);
+void unicode_string_render(const char *text, float x, float y, float scale, unsigned int flags);
 void unicode_render_atlas(void);
 
 #endif

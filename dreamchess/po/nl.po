@@ -242,7 +242,7 @@ msgstr "Spel starten"
 
 #: gui/title_dialog.c:198
 msgid "New Game.."
-msgstr "Nieuw spel.."
+msgstr "Nieuw spel.¢€."
 
 #: gui/title_dialog.c:202
 msgid "Load Game.."
