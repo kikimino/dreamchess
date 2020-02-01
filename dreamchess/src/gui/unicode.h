@@ -26,5 +26,7 @@ int unicode_resize(float pt_size);
 void unicode_exit(void);
 void unicode_string_render(const char *text, float x, float y, float align, float scale, unsigned int flags, gg_colour_t colour);
 void unicode_render_atlas(void);
+float unicode_get_font_height(void);
+float unicode_get_string_width(const char *text);
 
 #endif

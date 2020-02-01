@@ -85,7 +85,7 @@ gg_event_t convert_event(SDL_Event *event) {
 	case SDL_TEXTINPUT: {
 		unsigned int utf32 = utf8_to_utf32(event->text.text);
 
-		if (utf32 > 0 && utf32 <= 0xff) {
+		if (utf32 > 0 && utf32 <= 0x7f) {
 			gg_event.type = GG_EVENT_CHAR;
 			gg_event.key = utf32 & 0xff;
 			return gg_event;
@@ -168,11 +168,11 @@ static void draw_char(int c, int x, int y, gg_colour_t *colour) {
 }
 
 static unsigned int get_line_height(void) {
-	return 0;
+	return (unsigned int)unicode_get_font_height();
 }
 
 static unsigned int get_string_width(const char *text) {
-	return 0;
+	return (unsigned int)unicode_get_string_width(text);
 }
 
 static void draw_string(const char *text, int x, int y, float align, unsigned int flags, gg_colour_t colour) {
