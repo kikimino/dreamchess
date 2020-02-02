@@ -87,7 +87,7 @@ void unicode_exit(void) {
 	texture_atlas_delete(atlas);
 }
 
-static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
+static vertex_t *create_vertex_array(const char *text, size_t *array_size, float *width) {
 	const size_t text_len = strlen(text);
 
 	// Maximum size if every byte yields a glyph
@@ -97,7 +97,7 @@ static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
 
 	float pen_x = 0.0f;
 	const float pen_y = 0.0f;
-	float kerning = 0.0f;
+	char *prev_char = NULL;
 
 	for (size_t i = 0; i < text_len; ++i) {
 		// Skip bytes that are continuing a UTF-8 sequence
@@ -105,8 +105,10 @@ static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
 			texture_glyph_t *glyph = texture_font_get_glyph(font, text + i);
 
 			if (glyph != NULL) {
-				pen_x += kerning;
-				kerning = texture_glyph_get_kerning(glyph, text + i);
+				if (prev_char)
+					pen_x += texture_glyph_get_kerning(glyph, prev_char);
+
+				prev_char = text + i;
 
 				const int x0  = (int)(pen_x + glyph->offset_x);
 				const int y0  = (int)(pen_y + glyph->offset_y);
@@ -131,10 +133,12 @@ static vertex_t *create_vertex_array(const char *text, size_t *array_size) {
 
 	// Update to actual size
 	*array_size = vertex_index;
+	if (width)
+		*width = pen_x;
 	return vertex_array;
 }
 
-static void render_vertex_array(const vertex_t *vertex_array, size_t size, float x, float y, float align, float scale, unsigned int flags, gg_colour_t colour) {
+static void render_vertex_array(const vertex_t *vertex_array, size_t size, float x, float y, float xoffset, float scale, unsigned int flags, gg_colour_t colour) {
 	if (size == 0)
 		return;
 
@@ -147,7 +151,7 @@ static void render_vertex_array(const vertex_t *vertex_array, size_t size, float
 	glTranslatef(x, y, 0.0f);
 	glScalef(scale, scale, 1.0f);
 
-	glTranslatef(-(align * vertex_array[size - 1].x), -font->descender, 0.0f);
+	glTranslatef(xoffset, -font->descender, 0.0f);
 
 	glBegin(GL_QUADS);
 
@@ -181,12 +185,14 @@ static void render_vertex_array(const vertex_t *vertex_array, size_t size, float
 void unicode_string_render(const char *text, float x, float y, float align, float scale, unsigned int flags, gg_colour_t colour) {
 	const float screen_scale = get_gl_height() / get_screen_height();
 	size_t array_size;
-	vertex_t *vertex_array = create_vertex_array(text, &array_size);
+	float width;
+	vertex_t *vertex_array = create_vertex_array(text, &array_size, &width);
+	float xoffset = -align * width;
 
 	if (!(flags & GG_FLAG_NO_SHADOW))
-		render_vertex_array(vertex_array, array_size, x + 1.0f, y - 1.0f, align, screen_scale * scale, flags, (gg_colour_t){ 0.0f, 0.0f, 0.0f, 1.0f });
+		render_vertex_array(vertex_array, array_size, x + 1.0f, y - 1.0f, xoffset, screen_scale * scale, flags, (gg_colour_t){ 0.0f, 0.0f, 0.0f, 1.0f });
 
-	render_vertex_array(vertex_array, array_size, x, y, align, screen_scale * scale, flags, colour);
+	render_vertex_array(vertex_array, array_size, x, y, xoffset, screen_scale * scale, flags, colour);
 
 	free(vertex_array);
 }
@@ -197,17 +203,14 @@ float unicode_get_font_height(void) {
 }
 
 float unicode_get_string_width(const char *text) {
-	float width = 0.0f;
 	const float screen_scale = get_gl_height() / get_screen_height();
+	float width;
+
 	size_t array_size;
-	vertex_t *vertex_array = create_vertex_array(text, &array_size);
-
-	if (array_size > 0)
-		width = vertex_array[array_size - 1].x * screen_scale;
-
+	vertex_t *vertex_array = create_vertex_array(text, &array_size, &width);
 	free(vertex_array);
 
-	return width;
+	return width * screen_scale;
 }
 
 void unicode_render_atlas(void) {
